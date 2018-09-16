@@ -2,6 +2,8 @@
 Social trail state
 
 
+
+
 Strails è un'applicazione web utile agli appassionati di Mountain bike e trekking.
 È un "aiuto" social agli utilizzatori dei sentieri ed ai trail builder per sapere in che condizioni è un sentiero.
 In questo modo chi vuole fare un giro può pianificarlo in base allo stato dei sentieri che vuole attraversare e in caso di "problemi" i trail  builder saprebbero con più certezza dove e come intervenire.
