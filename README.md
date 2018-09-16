@@ -1,0 +1,2 @@
+# strails
+Social trail state
