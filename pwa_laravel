@@ -1,0 +1,361 @@
+
+npm install ## per installare laravel-mix
+
+npm run production
+npm run dev
+
+npm install --save-dev sw-precache-webpack-plugin ## per installare il service
+
+npm install localforage
+
+npm run dev
+
+vim package.json
+
+(cambia il path di webpack.config.js come segue)
+
+#########
+
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js",
+    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=webpack.config.js",
+    "watch-poll": "npm run watch -- --watch-poll",
+    "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=webpack.config.js",
+    "prod": "npm run production",
+    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-sass": "^3.3.7",
+    "cross-env": "^5.2.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "laravel-mix": "^1.0",
+    "lodash": "^4.17.4",
+    "sw-precache-webpack-plugin": "^0.11.5",
+    "vue": "^2.1.10",
+    "webpack-rtl-plugin": "^1.5.0"
+  },
+  "dependencies": {
+    "localforage": "^1.7.2"
+  }
+}
+
+#########
+
+cp node_modules/laravel-mix/setup/webpack.config.js ./
+
+vim ./webpack.config.js
+modifica come segue (cambiare i path):
+#########
+
+/**
+ * As our first step, we'll pull in the user's webpack.mix.js
+ * file. Based on what the user requests in that file,
+ * a generic config object will be constructed for us.
+ */
+
+require('./node_modules/laravel-mix/src/index');
+require(Mix.paths.mix());
+
+/**
+ * Just in case the user needs to hook into this point
+ * in the build process, we'll make an announcement.
+ */
+
+Mix.dispatch('init', Mix);
+
+/**
+ * Now that we know which build tasks are required by the
+ * user, we can dynamically create a configuration object
+ * for Webpack. And that's all there is to it. Simple!
+ */
+
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+module.exports = new WebpackConfig().build();
+
+
+#########
+
+
+npm run dev
+
+vim webpack.config.js
+
+incolla dopo la seguente riga:
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+il seguente pezzo di codice:
+########
+
+let path = require('path');
+let glob = require('glob');
+let webpack = require('webpack');
+//??????//let Mix = require('laravel-mix').config;
+let webpackPlugins = require('laravel-mix').plugins;
+let dotenv = require('dotenv');
+let SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin'); 
+
+########
+
+npm run dev
+
+vim webpack.config.js
+
+incolla sotto alla riga:
+module.exports = new WebpackConfig().build();
+
+il seguente codice:
+
+
+##########
+
+module.exports.plugins.push(
+    new SWPrecacheWebpackPlugin({
+        cacheId: 'pwa',
+        filename: 'service-worker.js',
+        staticFileGlobs: ['public/**/*.{css,eot,svg,ttf,woff,woff2,js,html}'],
+//new
+skipWaiting: true,
+        minify: true,
+        stripPrefix: 'public/',
+        handleFetch: true,
+        dynamicUrlToDependencies: {
+//          '/': ['resources/views/frontend/index.blade.php'],
+//          '/mappa': ['resources/views/frontend/mappa.blade.php'],
+            '/guide': ['resources/views/frontend/guide.blade.php'],
+            '/contact': ['resources/views/frontend/contact.blade.php']
+        },
+        staticFileGlobsIgnorePatterns: [/\.map$/, /mix-manifest\.json$/, /manifest\.json$/, /service-worker\.js$/],
+        runtimeCaching: [
+//new
+        {
+        urlPattern: /\/auth\//,
+        handler: 'networkOnly',
+        },
+            {
+                urlPattern: /^https:\/\/cdn\.jsdelivr\.net\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/cdn\.rawgit\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/unpkg\.com\//,
+                handler: 'cacheFirst'
+            }
+        ],
+        importScripts: ['./js/push_message.js']
+    })
+);
+
+
+##########
+
+
+
+il file webpack.config.js completo è il seguente:
+
+################
+
+/**
+ * As our first step, we'll pull in the user's webpack.mix.js
+ * file. Based on what the user requests in that file,
+ * a generic config object will be constructed for us.
+ */
+
+require('./node_modules/laravel-mix/src/index');
+require(Mix.paths.mix());
+
+/**
+ * Just in case the user needs to hook into this point
+ * in the build process, we'll make an announcement.
+ */
+
+Mix.dispatch('init', Mix);
+
+/**
+ * Now that we know which build tasks are required by the
+ * user, we can dynamically create a configuration object
+ * for Webpack. And that's all there is to it. Simple!
+ */
+
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+
+let path = require('path');
+let glob = require('glob');
+let webpack = require('webpack');
+//let Mix = require('laravel-mix').config;
+let webpackPlugins = require('laravel-mix').plugins;
+let dotenv = require('dotenv');
+let SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+
+module.exports = new WebpackConfig().build();
+
+module.exports.plugins.push(
+    new SWPrecacheWebpackPlugin({
+        cacheId: 'pwa',
+        filename: 'service-worker.js',
+        staticFileGlobs: ['public/**/*.{css,eot,svg,ttf,woff,woff2,js,html}'],
+//new
+skipWaiting: true,
+        minify: true,
+        stripPrefix: 'public/',
+        handleFetch: true,
+        dynamicUrlToDependencies: {
+//          '/': ['resources/views/frontend/index.blade.php'],
+//          '/mappa': ['resources/views/frontend/mappa.blade.php'],
+            '/guide': ['resources/views/frontend/guide.blade.php'],
+            '/contact': ['resources/views/frontend/contact.blade.php']
+        },
+        staticFileGlobsIgnorePatterns: [/\.map$/, /mix-manifest\.json$/, /manifest\.json$/, /service-worker\.js$/],
+        runtimeCaching: [
+//new
+        {
+        urlPattern: /\/auth\//,
+        handler: 'networkOnly',
+        },
+            {
+                urlPattern: /^https:\/\/cdn\.jsdelivr\.net\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/cdn\.rawgit\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/unpkg\.com\//,
+                handler: 'cacheFirst'
+            }
+        ],
+        importScripts: ['./js/push_message.js']
+    })
+);
+
+
+#################
+
+
+
+
+
+Incollo nei file 
+resources/views/frontend/guide.blade.php
+
+il seguente codice:
+
+###########
+
+@section('after-styles')
+<script>
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+            // Registration was successful
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function(err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
+</script>
+@endsection
+
+
+###########
+
+
+touch public/js/push_message.js
+
+npm run dev
+npm run production
+
+
+Adesso crea il manifest.json:
+ed elimina la rotta da web.php
+
+###############
+
+{
+        "name": "TST-Strails - Social Trail state - Lo stato dei sentieri",
+        "description": "Controlla e aggiorna lo stato dei tuoi sentieri e percorsi preferiti per essere sempre aggiornato e aggiornare gli altri nel modo pi\u00f9 rapido possibile - per mtb trekking passeggiate...",
+        "author": "Maurizio Proietti",
+        "short_name": "Strails",
+        "icons": [
+    {
+      "src": "img/logo/android-icon-36x36.png",
+      "sizes": "36x36",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/android-icon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/android-icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/android-icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/apple-icon-114x114.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/apple-icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/apple-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+
+        "theme_color": "#000000",
+        "background_color": "#FFFFFF",
+        "display": "standalone",
+        "orientation": "portrait",
+        "start_url": "/guide",
+        "gcm_sender_id": "309614210839"
+}
+
+###############
+
+
+
+npm run dev
+npm run production
+
+
+
