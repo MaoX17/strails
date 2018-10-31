@@ -1,0 +1,1186 @@
+Laravel progressive web app - workbox - Primo metodo
+
+npm install ## per installare laravel-mix
+
+npm run production
+npm run dev
+
+npm install -g workbox-cli
+
+npm install -D workbox-webpack-plugin
+
+npm install localforage
+
+npm run dev
+
+vim package.json
+
+(cambia il path di webpack.config.js come segue)
+
+#########
+
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js",
+    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=webpack.config.js",
+    "watch-poll": "npm run watch -- --watch-poll",
+    "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=webpack.config.js",
+    "prod": "npm run production",
+    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-sass": "^3.3.7",
+    "cross-env": "^5.2.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "laravel-mix": "^1.0",
+    "lodash": "^4.17.4",
+    "sw-precache-webpack-plugin": "^0.11.5",
+    "vue": "^2.1.10",
+    "webpack-rtl-plugin": "^1.5.0"
+  },
+  "dependencies": {
+    "localforage": "^1.7.2"
+  }
+}
+
+#########
+
+cp node_modules/laravel-mix/setup/webpack.config.js ./
+
+
+
+vim webpack.mix.js
+
+modifica come segue:
+##############################
+
+let workboxPlugin = require('workbox-webpack-plugin'); //prima riga
+...
+...
+
+if(mix.inProduction){
+    mix.version();
+mix.webpackConfig({
+        plugins: [
+            new workboxPlugin.InjectManifest({
+                swSrc: 'public/sw-offline.js', // more control over the caching
+                swDest: 'sw.js', // the service-worker file name
+                importsDirectory: 'service-worker' // have a dedicated folder for sw files
+            })
+        ]
+    })
+}
+############################
+
+
+info https://gist.github.com/addyosmani/0e1cfeeccad94edc2f0985a15adefe54
+
+vim public/sw-offline.js
+############################
+workbox.skipWaiting()
+workbox.clientsClaim()
+
+// fonts
+workbox.routing.registerRoute(
+    new RegExp('https://fonts.*'),
+    workbox.strategies.cacheFirst({
+        cacheName: 'fonts',
+        plugins: [
+            new workbox.cacheableResponse.Plugin({
+                statuses: [0, 200]
+            })
+        ]
+    })
+)
+
+// google stuff
+workbox.routing.registerRoute(
+    new RegExp('.*(?:googleapis|gstatic).com.*$'),
+    workbox.strategies.networkFirst({
+        cacheName: 'google'
+    })
+)
+
+// static
+workbox.routing.registerRoute(
+    new RegExp('.(?:js|css|ico)$'),
+    workbox.strategies.networkFirst({
+        cacheName: 'static'
+    }),
+)
+
+// images
+workbox.routing.registerRoute(
+    new RegExp('.(?:jpg|png|gif|svg)$'),
+    workbox.strategies.cacheFirst({
+        cacheName: 'images',
+        plugins: [
+            new workbox.expiration.Plugin({
+                maxEntries: 20,
+                purgeOnQuotaError: true,
+            })
+        ]
+    })
+)
+############################
+
+aggiungi un js
+############################
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+}
+############################
+
+oppure 
+
+############################
+
+@section('after-styles')
+<script>
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    window.addEventListener('load', function() {
+        //navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+        navigator.serviceWorker.register('/sw.js').then(function(registration) {
+            // Registration was successful
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function(err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
+</script>
+@endsection
+
+###########################
+
+
+
+npm install 
+
+npm run dev
+
+npm run production
+
+
+npm install ; npm run dev ; npm run production
+
+
+############################################################################################################################
+############################################################################################################################
+
+Laravel progressive web app - workbox - Secondo metodo
+
+npm install ## per installare laravel-mix
+
+npm run production
+npm run dev
+
+
+vim package.json
+
+(cambia il path di webpack.config.js come segue)
+
+#########
+
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js",
+    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=webpack.config.js",
+    "watch-poll": "npm run watch -- --watch-poll",
+    "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=webpack.config.js",
+    "prod": "npm run production",
+    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-sass": "^3.3.7",
+    "cross-env": "^5.2.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "laravel-mix": "^1.0",
+    "lodash": "^4.17.4",
+    "sw-precache-webpack-plugin": "^0.11.5",
+    "vue": "^2.1.10",
+    "webpack-rtl-plugin": "^1.5.0"
+  },
+  "dependencies": {
+    "localforage": "^1.7.2"
+  }
+}
+
+#########
+
+cp node_modules/laravel-mix/setup/webpack.config.js ./
+
+
+
+npm install -g workbox-cli
+
+npm install -D workbox-webpack-plugin
+
+npm install localforage
+
+npm run dev
+
+vim webpack.config.js
+
+##############################
+
+/**
+ * As our first step, we'll pull in the user's webpack.mix.js
+ * file. Based on what the user requests in that file,
+ * a generic config object will be constructed for us.
+ */
+
+require('./node_modules/laravel-mix/src/index');
+require(Mix.paths.mix());
+
+/**
+ * Just in case the user needs to hook into this point
+ * in the build process, we'll make an announcement.
+ */
+
+Mix.dispatch('init', Mix);
+
+/**
+ * Now that we know which build tasks are required by the
+ * user, we can dynamically create a configuration object
+ * for Webpack. And that's all there is to it. Simple!
+ */
+
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+let path = require('path');
+let glob = require('glob');
+let webpack = require('webpack');
+//??????//let Mix = require('laravel-mix').config;
+let webpackPlugins = require('laravel-mix').plugins;
+let dotenv = require('dotenv');
+let workboxPlugin = require('workbox-webpack-plugin');
+//let SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+
+module.exports = new WebpackConfig().build();
+
+module.exports.plugins.push(
+        new workboxPlugin.GenerateSW(
+
+   {
+
+    cacheId: 'strails',
+
+    globDirectory: 'public/',
+    globPatterns: [
+      "**/*.{css,ico,eot,svg,ttf,woff,woff2,js,json}",
+      "img/*.{png,jpg,jpeg,gif,bmp}",
+    ],
+
+    modifyUrlPrefix: {
+      // Remove a '/dist' prefix from the URLs:
+         '/public': ''
+    },
+
+    clientsClaim: true,
+    skipWaiting: true,
+
+//      exclude: [/\.(?:png|jpg|jpeg|svg)$/],
+
+
+runtimeCaching: [
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /ajax/,
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-ajax-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 360,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /img/,
+    // Apply a cacheFirst strategy.
+    handler: 'cacheFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      // Use a custom cache name for this route.
+      cacheName: 'my-img-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+//      cacheableResponse: {
+//        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+//      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /css/,
+    // Apply a cacheFirst strategy.
+    handler: 'cacheFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      // Use a custom cache name for this route.
+      cacheName: 'my-css-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+//      cacheableResponse: {
+//        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+//      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /js/,
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-js-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 360,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('/auth/'),
+    handler: 'networkOnly',
+},
+{
+   urlPattern: "/",
+   handler: 'networkFirst',
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cors\.example\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.jsdelivr\.net/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdnjs\.cloudflare\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.rawgit\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://fonts\.googleapis\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://unpkg\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+
+
+]
+
+
+
+//      runtimeCaching: [{
+//        urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
+//        handler: 'cacheFirst',
+//        options: {
+//          cacheName: 'images',
+//          expiration: {
+//            maxEntries: 10,
+//          },
+//        },
+//      }]
+
+     ,
+          }
+
+)
+);
+
+
+
+##############################
+
+
+
+aggiungi un js
+############################
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+}
+############################
+
+oppure 
+
+############################
+
+@section('after-styles')
+<script>
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+        //navigator.serviceWorker.register('/sw.js').then(function(registration) {
+            // Registration was successful
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function(err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
+</script>
+@endsection
+
+###########################
+
+
+
+npm install ; npm run dev ; npm run production
+
+
+
+############################################################################################################################
+############################################################################################################################
+
+Laravel progressive web app - workbox - Terzo metodo
+
+npm install ## per installare laravel-mix
+
+npm run production
+npm run dev
+
+
+vim package.json
+
+(cambia il path di webpack.config.js come segue)
+
+#########
+
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js",
+    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=webpack.config.js",
+    "watch-poll": "npm run watch -- --watch-poll",
+    "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=webpack.config.js",
+    "prod": "npm run production",
+    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-sass": "^3.3.7",
+    "cross-env": "^5.2.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "laravel-mix": "^1.0",
+    "lodash": "^4.17.4",
+    "sw-precache-webpack-plugin": "^0.11.5",
+    "vue": "^2.1.10",
+    "webpack-rtl-plugin": "^1.5.0"
+  },
+  "dependencies": {
+    "localforage": "^1.7.2"
+  }
+}
+
+#########
+
+cp node_modules/laravel-mix/setup/webpack.config.js ./
+
+
+
+npm install -g workbox-cli
+
+npm install -D workbox-webpack-plugin
+
+npm install localforage
+
+npm run dev
+
+
+vim workbox-config.js
+
+#########
+module.exports =
+
+   {
+
+swDest: "public/sw.js",
+    cacheId: 'strails',
+
+    globDirectory: 'public/',
+    globPatterns: [
+      "**/*.{css,ico,eot,svg,ttf,woff,woff2,js,json}",
+      "img/*.{png,jpg,jpeg,gif,bmp}",
+    ],
+
+    modifyUrlPrefix: {
+      // Remove a '/dist' prefix from the URLs:
+         '/public': ''
+    },
+
+    clientsClaim: true,
+    skipWaiting: true,
+
+//      exclude: [/\.(?:png|jpg|jpeg|svg)$/],
+
+
+runtimeCaching: [
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /ajax/,
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-ajax-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 360,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /img/,
+    // Apply a network-first strategy.
+    handler: 'cacheFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      // Use a custom cache name for this route.
+      cacheName: 'my-img-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+//      cacheableResponse: {
+//        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+//      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /css/,
+    // Apply a network-first strategy.
+    handler: 'cacheFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      // Use a custom cache name for this route.
+      cacheName: 'my-css-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+//      cacheableResponse: {
+//        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+//      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /js/,
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-js-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 360,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('/auth/'),
+    handler: 'networkOnly',
+},
+{
+   urlPattern: "/",
+   handler: 'networkFirst',
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cors\.example\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.jsdelivr\.net/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdnjs\.cloudflare\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.rawgit\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://fonts\.googleapis\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://unpkg\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+
+
+]
+
+
+
+//      runtimeCaching: [{
+//        urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
+//        handler: 'cacheFirst',
+//        options: {
+//          cacheName: 'images',
+//          expiration: {
+//            maxEntries: 10,
+//          },
+//        },
+//      }]
+
+     ,
+          }
+
+#########
+
+
+workbox generateSW workbox-config.js
+
+npm install ; npm run dev ; npm run production
+
+
+############################################################################################################################
+############################################################################################################################
+
+
+
+
+
+
+Ultima versione VALIDA metodo 2:
+
+[root@vmi117698 tststrails]# cat /var/www/tststrails/webpack.config.js
+
+/**
+ * As our first step, we'll pull in the user's webpack.mix.js
+ * file. Based on what the user requests in that file,
+ * a generic config object will be constructed for us.
+ */
+
+require('./node_modules/laravel-mix/src/index');
+require(Mix.paths.mix());
+
+/**
+ * Just in case the user needs to hook into this point
+ * in the build process, we'll make an announcement.
+ */
+
+Mix.dispatch('init', Mix);
+
+/**
+ * Now that we know which build tasks are required by the
+ * user, we can dynamically create a configuration object
+ * for Webpack. And that's all there is to it. Simple!
+ */
+
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+let path = require('path');
+let glob = require('glob');
+let webpack = require('webpack');
+//??????//let Mix = require('laravel-mix').config;
+let webpackPlugins = require('laravel-mix').plugins;
+let dotenv = require('dotenv');
+let workboxPlugin = require('workbox-webpack-plugin');
+//let SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+
+module.exports = new WebpackConfig().build();
+
+module.exports.plugins.push(
+        new workboxPlugin.GenerateSW(
+
+   {
+
+    cacheId: 'strails',
+
+    globDirectory: 'public/',
+    globPatterns: [
+      "**/*.{css,ico,eot,svg,ttf,woff,woff2,js,json}",
+      "img/*.{png,jpg,jpeg,gif,bmp}",
+    ],
+
+    modifyUrlPrefix: {
+      // Remove a '/dist' prefix from the URLs:
+         '/public': ''
+    },
+
+    clientsClaim: true,
+    skipWaiting: true,
+
+//      exclude: [/\.(?:png|jpg|jpeg|svg)$/],
+
+
+runtimeCaching: [
+
+
+            {
+             urlPattern: new RegExp(`${process.env.APP_URL}`),
+             handler: 'networkFirst',
+             options: {
+               cacheName: `${process.env.APP_NAME}-${process.env.APP_ENV}`
+             }
+           },
+           {
+             urlPattern: new RegExp('https://fonts.(googleapis|gstatic).com'),
+             handler: 'cacheFirst',
+             options: {
+               cacheName: 'google-fonts'
+             }
+           },
+
+
+
+
+
+//images
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('.(?:jpg|png|gif|svg|ico)$'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+//css js
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('.(?:js|css)$'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+
+// root site
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: '/',
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-root-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 150,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+//      matchOptions: {
+//        ignoreSearch: true,
+//      },
+    },
+  },
+
+
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('/auth/'),
+    handler: 'networkOnly',
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.jsdelivr\.net/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdnjs\.cloudflare\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.rawgit\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://fonts\.googleapis\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://unpkg\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+
+
+],
+
+}
+
+)
+);
+
+
+#######################################################################
