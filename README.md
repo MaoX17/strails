@@ -2,8 +2,6 @@
 Social trail state
 
 
-
-
 Strails è un'applicazione web utile agli appassionati di Mountain bike e trekking.
 
 L'applicazione Strails ha un funzionamento molto semplice.
@@ -23,6 +21,13 @@ Strails è in continuo aggiornamento. Ogni volta che ho un po' di tempo libero c
 ## L'indirizzo è:
 ## https://www.strails.it
 
+
+## Pubblicato il codice sorgente
+
+[Lo trovate qui](https://github.com/MaoX17/strails)
+
+Spero possiate aiutarmi e darmi buone idee per migliorare
+
 Grazie per l'attenzione 
-Spero possiate darmi qualche consiglio
+
 
