@@ -72,7 +72,7 @@
         <!-- <link media="all" type="text/css" rel="stylesheet" href="{{secure_url(secure_asset('css/app.css'))}}'"> -->
         <link rel="dns-prefetch" href="//fonts.gstatic.com">
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-        <link href="{{ secure_asset('css/app.css') }}" rel="stylesheet">
+        <link href="{{ mix('css/app.css') }}" rel="stylesheet">
 
         @yield('after-styles')
 
