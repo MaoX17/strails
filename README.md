@@ -20,7 +20,7 @@ Strails è in continuo aggiornamento. Ogni volta che ho un po' di tempo libero c
 
 ## L'indirizzo è:
 
-## https://www.strails.it
+## https://tst.strails.it
 
 ## Pubblicato il codice sorgente
 
