@@ -32,7 +32,8 @@ Grazie per l'attenzione
 
 ## Appunti GIT
 
-Creating a git develop branch
+### Creating a git develop branch
+
 You can list all of your current branches like this:
 
 ```
@@ -67,7 +68,8 @@ git checkout develop
 
 That's the same way you create a branch but without the -b.
 
-Making changes on develop
+### Making changes on develop
+
 When making changes, add and commit as usual:
 
 ```
@@ -87,7 +89,8 @@ The -u flag stands for --set-upstream. After the first time you only need to do 
 git push
 ```
 
-Merging develop to master
+### Merging develop to master
+
 Once your develop is ready to merge into master you can do it like so:
 
 First switch to your local master branch:
@@ -110,7 +113,8 @@ git push
 
 Done.
 
-Deleting a branch
+### Deleting a branch
+
 If you don't need the develop branch anymore, or you just want to delete it and start over, you can do the following:
 
 Delete the remote develop branch:
