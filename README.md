@@ -35,7 +35,10 @@ Grazie per l'attenzione
 Creating a git develop branch
 You can list all of your current branches like this:
 
+```
 git branch -a
+```
+
 This shows all of the local and remote branches. Assuming you only have a single master branch, you'd see the following:
 
 -   master
@@ -44,7 +47,10 @@ This shows all of the local and remote branches. Assuming you only have a single
 
 To create a new branch named develop, use the following command:
 
+```
 git checkout -b develop
+```
+
 The -b flag creates the branch. Listing the branches now should show:
 
 -   develop
@@ -55,7 +61,10 @@ The -b flag creates the branch. Listing the branches now should show:
 
 You are already in your develop branch, but if you weren't, the way to switch is as follows:
 
+```
 git checkout develop
+```
+
 That's the same way you create a branch but without the -b.
 
 Making changes on develop
