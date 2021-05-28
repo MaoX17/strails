@@ -1,13 +1,23 @@
 {
-    "name": "maurizioproietti/strails",
+    "name": "maox17/strails",
     "type": "project",
-    "description": "Strails on Laravel 8.",
+    "description": "Strails on Laravel 8.2",
     "keywords": [
         "framework",
         "laravel",
         "strails"
     ],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Maurizio Proietti",
+            "email": "maurizio.proietti@gmail.com"
+        },
+        {
+            "name": "Simone Magnolfi",
+            "email": "simone.magnolfi@gmail.com"
+        }
+    ],
     "require": {
         "php": "^7.4|^8.0",
         "arcanedev/log-viewer": "8.x",

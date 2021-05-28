@@ -8,7 +8,7 @@ logs
 # Ignore the build directory
 /dist
 
-# The file containing environment variables
+# The file containing environment variables 
 .env*
 
 # Ignore IDE specific files
@@ -82,5 +82,4 @@ node_modules
 vendor
 */.env*
 */src
-.phpstorm.meta.php
 
