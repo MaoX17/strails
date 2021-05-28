@@ -70,26 +70,44 @@ That's the same way you create a branch but without the -b.
 Making changes on develop
 When making changes, add and commit as usual:
 
+```
 git add .
 git commit -m "whatever"
+```
+
 The first time you push to your remote do it like so:
 
+```
 git push -u origin develop
+```
+
 The -u flag stands for --set-upstream. After the first time you only need to do it like this:
 
+```
 git push
+```
+
 Merging develop to master
 Once your develop is ready to merge into master you can do it like so:
 
 First switch to your local master branch:
 
+```
 git checkout master
+```
+
 To merge develop into master do the following:
 
+```
 git merge develop
+```
+
 Then push the changes in local master to the remote master:
 
+```
 git push
+```
+
 Done.
 
 Deleting a branch
@@ -97,8 +115,14 @@ If you don't need the develop branch anymore, or you just want to delete it and 
 
 Delete the remote develop branch:
 
+```
 git push -d origin develop
+```
+
 Then delete the local branch:
 
+```
 git branch -d develop
+```
+
 The -d means delete.
