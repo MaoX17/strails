@@ -1,0 +1,1878 @@
+TODO:
+
+
+npm install ## per installare laravel-mix
+
+npm run production
+npm run dev
+
+npm install --save-dev sw-precache-webpack-plugin ## per installare il service
+
+npm install localforage
+
+npm run dev
+
+vim package.json
+
+(cambia il path di webpack.config.js come segue)
+
+#########
+
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js",
+    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=webpack.config.js",
+    "watch-poll": "npm run watch -- --watch-poll",
+    "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=webpack.config.js",
+    "prod": "npm run production",
+    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-sass": "^3.3.7",
+    "cross-env": "^5.2.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "laravel-mix": "^1.0",
+    "lodash": "^4.17.4",
+    "sw-precache-webpack-plugin": "^0.11.5",
+    "vue": "^2.1.10",
+    "webpack-rtl-plugin": "^1.5.0"
+  },
+  "dependencies": {
+    "localforage": "^1.7.2"
+  }
+}
+
+#########
+
+cp node_modules/laravel-mix/setup/webpack.config.js ./
+
+vim ./webpack.config.js
+modifica come segue (cambiare i path):
+#########
+
+/**
+ * As our first step, we'll pull in the user's webpack.mix.js
+ * file. Based on what the user requests in that file,
+ * a generic config object will be constructed for us.
+ */
+
+require('./node_modules/laravel-mix/src/index');
+require(Mix.paths.mix());
+
+/**
+ * Just in case the user needs to hook into this point
+ * in the build process, we'll make an announcement.
+ */
+
+Mix.dispatch('init', Mix);
+
+/**
+ * Now that we know which build tasks are required by the
+ * user, we can dynamically create a configuration object
+ * for Webpack. And that's all there is to it. Simple!
+ */
+
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+module.exports = new WebpackConfig().build();
+
+
+#########
+
+
+npm run dev
+
+vim webpack.config.js
+
+incolla dopo la seguente riga:
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+il seguente pezzo di codice:
+########
+
+let path = require('path');
+let glob = require('glob');
+let webpack = require('webpack');
+//??????//let Mix = require('laravel-mix').config;
+let webpackPlugins = require('laravel-mix').plugins;
+let dotenv = require('dotenv');
+let SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin'); 
+
+########
+
+npm run dev
+
+vim webpack.config.js
+
+incolla sotto alla riga:
+module.exports = new WebpackConfig().build();
+
+il seguente codice:
+
+
+##########
+
+module.exports.plugins.push(
+    new SWPrecacheWebpackPlugin({
+        cacheId: 'pwa',
+        filename: 'service-worker.js',
+        staticFileGlobs: ['public/**/*.{css,eot,svg,ttf,woff,woff2,js,html}'],
+//new
+skipWaiting: true,
+        minify: true,
+        stripPrefix: 'public/',
+        handleFetch: true,
+        dynamicUrlToDependencies: {
+//          '/': ['resources/views/frontend/index.blade.php'],
+//          '/mappa': ['resources/views/frontend/mappa.blade.php'],
+            '/guide': ['resources/views/frontend/guide.blade.php'],
+            '/contact': ['resources/views/frontend/contact.blade.php']
+        },
+        staticFileGlobsIgnorePatterns: [/\.map$/, /mix-manifest\.json$/, /manifest\.json$/, /service-worker\.js$/],
+        runtimeCaching: [
+//new
+        {
+        urlPattern: /\/auth\//,
+        handler: 'networkOnly',
+        },
+            {
+                urlPattern: /^https:\/\/cdn\.jsdelivr\.net\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/cdn\.rawgit\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/unpkg\.com\//,
+                handler: 'cacheFirst'
+            }
+        ],
+        importScripts: ['./js/push_message.js']
+    })
+);
+
+
+##########
+
+
+
+il file webpack.config.js completo è il seguente:
+
+################
+
+/**
+ * As our first step, we'll pull in the user's webpack.mix.js
+ * file. Based on what the user requests in that file,
+ * a generic config object will be constructed for us.
+ */
+
+require('./node_modules/laravel-mix/src/index');
+require(Mix.paths.mix());
+
+/**
+ * Just in case the user needs to hook into this point
+ * in the build process, we'll make an announcement.
+ */
+
+Mix.dispatch('init', Mix);
+
+/**
+ * Now that we know which build tasks are required by the
+ * user, we can dynamically create a configuration object
+ * for Webpack. And that's all there is to it. Simple!
+ */
+
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+
+let path = require('path');
+let glob = require('glob');
+let webpack = require('webpack');
+//let Mix = require('laravel-mix').config;
+let webpackPlugins = require('laravel-mix').plugins;
+let dotenv = require('dotenv');
+let SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+
+module.exports = new WebpackConfig().build();
+
+module.exports.plugins.push(
+    new SWPrecacheWebpackPlugin({
+        cacheId: 'pwa',
+        filename: 'service-worker.js',
+        staticFileGlobs: ['public/**/*.{css,eot,svg,ttf,woff,woff2,js,html}'],
+//new
+skipWaiting: true,
+        minify: true,
+        stripPrefix: 'public/',
+        handleFetch: true,
+        dynamicUrlToDependencies: {
+//          '/': ['resources/views/frontend/index.blade.php'],
+//          '/mappa': ['resources/views/frontend/mappa.blade.php'],
+            '/guide': ['resources/views/frontend/guide.blade.php'],
+            '/contact': ['resources/views/frontend/contact.blade.php']
+        },
+        staticFileGlobsIgnorePatterns: [/\.map$/, /mix-manifest\.json$/, /manifest\.json$/, /service-worker\.js$/],
+        runtimeCaching: [
+//new
+        {
+        urlPattern: /\/auth\//,
+        handler: 'networkOnly',
+        },
+            {
+                urlPattern: /^https:\/\/cdn\.jsdelivr\.net\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/cdnjs\.cloudflare\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/cdn\.rawgit\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+                handler: 'cacheFirst'
+            },
+            {
+                urlPattern: /^https:\/\/unpkg\.com\//,
+                handler: 'cacheFirst'
+            }
+        ],
+        importScripts: ['./js/push_message.js']
+    })
+);
+
+
+#################
+
+
+
+
+
+Incollo nei file 
+resources/views/frontend/guide.blade.php
+
+il seguente codice:
+
+###########
+
+@section('after-styles')
+<script>
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+            // Registration was successful
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function(err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
+</script>
+@endsection
+
+
+###########
+
+
+touch public/js/push_message.js
+
+npm run dev
+npm run production
+
+
+Adesso crea il manifest.json:
+ed elimina la rotta da web.php
+
+###############
+
+{
+        "name": "TST-Strails - Social Trail state - Lo stato dei sentieri",
+        "description": "Controlla e aggiorna lo stato dei tuoi sentieri e percorsi preferiti per essere sempre aggiornato e aggiornare gli altri nel modo pi\u00f9 rapido possibile - per mtb trekking passeggiate...",
+        "author": "Maurizio Proietti",
+        "short_name": "Strails",
+        "icons": [
+    {
+      "src": "img/logo/android-icon-36x36.png",
+      "sizes": "36x36",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/android-icon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/android-icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/android-icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/apple-icon-114x114.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/apple-icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "img/logo/apple-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+
+        "theme_color": "#000000",
+        "background_color": "#FFFFFF",
+        "display": "standalone",
+        "orientation": "portrait",
+        "start_url": "/guide",
+        "gcm_sender_id": "309614210839"
+}
+
+###############
+
+
+
+npm run dev
+npm run production
+
+
+
+
+
+
+
+
+
+Laravel progressive web app - workbox - Primo metodo
+
+npm install ## per installare laravel-mix
+
+npm run production
+npm run dev
+
+npm install -g workbox-cli
+
+npm install -D workbox-webpack-plugin
+
+npm install localforage
+
+npm run dev
+
+vim package.json
+
+(cambia il path di webpack.config.js come segue)
+
+#########
+
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js",
+    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=webpack.config.js",
+    "watch-poll": "npm run watch -- --watch-poll",
+    "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=webpack.config.js",
+    "prod": "npm run production",
+    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-sass": "^3.3.7",
+    "cross-env": "^5.2.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "laravel-mix": "^1.0",
+    "lodash": "^4.17.4",
+    "sw-precache-webpack-plugin": "^0.11.5",
+    "vue": "^2.1.10",
+    "webpack-rtl-plugin": "^1.5.0"
+  },
+  "dependencies": {
+    "localforage": "^1.7.2"
+  }
+}
+
+#########
+
+cp node_modules/laravel-mix/setup/webpack.config.js ./
+
+
+
+vim webpack.mix.js
+
+modifica come segue:
+##############################
+
+let workboxPlugin = require('workbox-webpack-plugin'); //prima riga
+...
+...
+
+if(mix.inProduction){
+    mix.version();
+mix.webpackConfig({
+        plugins: [
+            new workboxPlugin.InjectManifest({
+                swSrc: 'public/sw-offline.js', // more control over the caching
+                swDest: 'sw.js', // the service-worker file name
+                importsDirectory: 'service-worker' // have a dedicated folder for sw files
+            })
+        ]
+    })
+}
+############################
+
+
+info https://gist.github.com/addyosmani/0e1cfeeccad94edc2f0985a15adefe54
+
+vim public/sw-offline.js
+############################
+workbox.skipWaiting()
+workbox.clientsClaim()
+
+// fonts
+workbox.routing.registerRoute(
+    new RegExp('https://fonts.*'),
+    workbox.strategies.cacheFirst({
+        cacheName: 'fonts',
+        plugins: [
+            new workbox.cacheableResponse.Plugin({
+                statuses: [0, 200]
+            })
+        ]
+    })
+)
+
+// google stuff
+workbox.routing.registerRoute(
+    new RegExp('.*(?:googleapis|gstatic).com.*$'),
+    workbox.strategies.networkFirst({
+        cacheName: 'google'
+    })
+)
+
+// static
+workbox.routing.registerRoute(
+    new RegExp('.(?:js|css|ico)$'),
+    workbox.strategies.networkFirst({
+        cacheName: 'static'
+    }),
+)
+
+// images
+workbox.routing.registerRoute(
+    new RegExp('.(?:jpg|png|gif|svg)$'),
+    workbox.strategies.cacheFirst({
+        cacheName: 'images',
+        plugins: [
+            new workbox.expiration.Plugin({
+                maxEntries: 20,
+                purgeOnQuotaError: true,
+            })
+        ]
+    })
+)
+############################
+
+aggiungi un js
+############################
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+}
+############################
+
+oppure 
+
+############################
+
+@section('after-styles')
+<script>
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    window.addEventListener('load', function() {
+        //navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+        navigator.serviceWorker.register('/sw.js').then(function(registration) {
+            // Registration was successful
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function(err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
+</script>
+@endsection
+
+###########################
+
+
+
+npm install 
+
+npm run dev
+
+npm run production
+
+
+npm install ; npm run dev ; npm run production
+
+
+############################################################################################################################
+############################################################################################################################
+
+Laravel progressive web app - workbox - Secondo metodo
+
+npm install ## per installare laravel-mix
+
+npm run production
+npm run dev
+
+
+vim package.json
+
+(cambia il path di webpack.config.js come segue)
+
+#########
+
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js",
+    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=webpack.config.js",
+    "watch-poll": "npm run watch -- --watch-poll",
+    "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=webpack.config.js",
+    "prod": "npm run production",
+    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-sass": "^3.3.7",
+    "cross-env": "^5.2.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "laravel-mix": "^1.0",
+    "lodash": "^4.17.4",
+    "sw-precache-webpack-plugin": "^0.11.5",
+    "vue": "^2.1.10",
+    "webpack-rtl-plugin": "^1.5.0"
+  },
+  "dependencies": {
+    "localforage": "^1.7.2"
+  }
+}
+
+#########
+
+cp node_modules/laravel-mix/setup/webpack.config.js ./
+
+
+
+npm install -g workbox-cli
+
+npm install -D workbox-webpack-plugin
+
+npm install localforage
+
+npm run dev
+
+vim webpack.config.js
+
+##############################
+
+/**
+ * As our first step, we'll pull in the user's webpack.mix.js
+ * file. Based on what the user requests in that file,
+ * a generic config object will be constructed for us.
+ */
+
+require('./node_modules/laravel-mix/src/index');
+require(Mix.paths.mix());
+
+/**
+ * Just in case the user needs to hook into this point
+ * in the build process, we'll make an announcement.
+ */
+
+Mix.dispatch('init', Mix);
+
+/**
+ * Now that we know which build tasks are required by the
+ * user, we can dynamically create a configuration object
+ * for Webpack. And that's all there is to it. Simple!
+ */
+
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+let path = require('path');
+let glob = require('glob');
+let webpack = require('webpack');
+//??????//let Mix = require('laravel-mix').config;
+let webpackPlugins = require('laravel-mix').plugins;
+let dotenv = require('dotenv');
+let workboxPlugin = require('workbox-webpack-plugin');
+//let SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+
+module.exports = new WebpackConfig().build();
+
+module.exports.plugins.push(
+        new workboxPlugin.GenerateSW(
+
+   {
+
+    cacheId: 'strails',
+
+    globDirectory: 'public/',
+    globPatterns: [
+      "**/*.{css,ico,eot,svg,ttf,woff,woff2,js,json}",
+      "img/*.{png,jpg,jpeg,gif,bmp}",
+    ],
+
+    modifyUrlPrefix: {
+      // Remove a '/dist' prefix from the URLs:
+         '/public': ''
+    },
+
+    clientsClaim: true,
+    skipWaiting: true,
+
+//      exclude: [/\.(?:png|jpg|jpeg|svg)$/],
+
+
+runtimeCaching: [
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /ajax/,
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-ajax-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 360,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /img/,
+    // Apply a cacheFirst strategy.
+    handler: 'cacheFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      // Use a custom cache name for this route.
+      cacheName: 'my-img-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+//      cacheableResponse: {
+//        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+//      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /css/,
+    // Apply a cacheFirst strategy.
+    handler: 'cacheFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      // Use a custom cache name for this route.
+      cacheName: 'my-css-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+//      cacheableResponse: {
+//        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+//      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /js/,
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-js-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 360,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('/auth/'),
+    handler: 'networkOnly',
+},
+{
+   urlPattern: "/",
+   handler: 'networkFirst',
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cors\.example\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.jsdelivr\.net/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdnjs\.cloudflare\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.rawgit\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://fonts\.googleapis\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://unpkg\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+
+
+]
+
+
+
+//      runtimeCaching: [{
+//        urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
+//        handler: 'cacheFirst',
+//        options: {
+//          cacheName: 'images',
+//          expiration: {
+//            maxEntries: 10,
+//          },
+//        },
+//      }]
+
+     ,
+          }
+
+)
+);
+
+
+
+##############################
+
+
+
+aggiungi un js
+############################
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+}
+############################
+
+oppure 
+
+############################
+
+@section('after-styles')
+<script>
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+        //navigator.serviceWorker.register('/sw.js').then(function(registration) {
+            // Registration was successful
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, function(err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+}
+</script>
+@endsection
+
+###########################
+
+
+
+npm install ; npm run dev ; npm run production
+
+
+
+############################################################################################################################
+############################################################################################################################
+
+Laravel progressive web app - workbox - Terzo metodo
+
+npm install ## per installare laravel-mix
+
+npm run production
+npm run dev
+
+
+vim package.json
+
+(cambia il path di webpack.config.js come segue)
+
+#########
+
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run development",
+    "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js",
+    "watch": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --watch --progress --hide-modules --config=webpack.config.js",
+    "watch-poll": "npm run watch -- --watch-poll",
+    "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=webpack.config.js",
+    "prod": "npm run production",
+    "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=webpack.config.js"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-sass": "^3.3.7",
+    "cross-env": "^5.2.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
+    "laravel-mix": "^1.0",
+    "lodash": "^4.17.4",
+    "sw-precache-webpack-plugin": "^0.11.5",
+    "vue": "^2.1.10",
+    "webpack-rtl-plugin": "^1.5.0"
+  },
+  "dependencies": {
+    "localforage": "^1.7.2"
+  }
+}
+
+#########
+
+cp node_modules/laravel-mix/setup/webpack.config.js ./
+
+
+
+npm install -g workbox-cli
+
+npm install -D workbox-webpack-plugin
+
+npm install localforage
+
+npm run dev
+
+
+vim workbox-config.js
+
+#########
+module.exports =
+
+   {
+
+swDest: "public/sw.js",
+    cacheId: 'strails',
+
+    globDirectory: 'public/',
+    globPatterns: [
+      "**/*.{css,ico,eot,svg,ttf,woff,woff2,js,json}",
+      "img/*.{png,jpg,jpeg,gif,bmp}",
+    ],
+
+    modifyUrlPrefix: {
+      // Remove a '/dist' prefix from the URLs:
+         '/public': ''
+    },
+
+    clientsClaim: true,
+    skipWaiting: true,
+
+//      exclude: [/\.(?:png|jpg|jpeg|svg)$/],
+
+
+runtimeCaching: [
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /ajax/,
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-ajax-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 360,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /img/,
+    // Apply a network-first strategy.
+    handler: 'cacheFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      // Use a custom cache name for this route.
+      cacheName: 'my-img-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+//      cacheableResponse: {
+//        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+//      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /css/,
+    // Apply a network-first strategy.
+    handler: 'cacheFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      // Use a custom cache name for this route.
+      cacheName: 'my-css-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+//      cacheableResponse: {
+//        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+//      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: /js/,
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-js-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 15,
+        maxAgeSeconds: 360,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+      matchOptions: {
+        ignoreSearch: true,
+      },
+    },
+  },
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('/auth/'),
+    handler: 'networkOnly',
+},
+{
+   urlPattern: "/",
+   handler: 'networkFirst',
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cors\.example\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.jsdelivr\.net/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdnjs\.cloudflare\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.rawgit\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://fonts\.googleapis\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://unpkg\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+
+
+]
+
+
+
+//      runtimeCaching: [{
+//        urlPattern: /\.(?:png|jpg|jpeg|svg)$/,
+//        handler: 'cacheFirst',
+//        options: {
+//          cacheName: 'images',
+//          expiration: {
+//            maxEntries: 10,
+//          },
+//        },
+//      }]
+
+     ,
+          }
+
+#########
+
+
+workbox generateSW workbox-config.js
+
+npm install ; npm run dev ; npm run production
+
+
+############################################################################################################################
+############################################################################################################################
+
+
+
+
+
+
+Ultima versione VALIDA metodo 2:
+
+[root@vmi117698 tststrails]# cat /var/www/tststrails/webpack.config.js
+
+/**
+ * As our first step, we'll pull in the user's webpack.mix.js
+ * file. Based on what the user requests in that file,
+ * a generic config object will be constructed for us.
+ */
+
+require('./node_modules/laravel-mix/src/index');
+require(Mix.paths.mix());
+
+/**
+ * Just in case the user needs to hook into this point
+ * in the build process, we'll make an announcement.
+ */
+
+Mix.dispatch('init', Mix);
+
+/**
+ * Now that we know which build tasks are required by the
+ * user, we can dynamically create a configuration object
+ * for Webpack. And that's all there is to it. Simple!
+ */
+
+let WebpackConfig = require('./node_modules/laravel-mix/src/builder/WebpackConfig');
+
+let path = require('path');
+let glob = require('glob');
+let webpack = require('webpack');
+//??????//let Mix = require('laravel-mix').config;
+let webpackPlugins = require('laravel-mix').plugins;
+let dotenv = require('dotenv');
+let workboxPlugin = require('workbox-webpack-plugin');
+//let SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+
+module.exports = new WebpackConfig().build();
+
+module.exports.plugins.push(
+        new workboxPlugin.GenerateSW(
+
+   {
+
+    cacheId: 'strails',
+
+    globDirectory: 'public/',
+    globPatterns: [
+      "**/*.{css,ico,eot,svg,ttf,woff,woff2,js,json}",
+      "img/*.{png,jpg,jpeg,gif,bmp}",
+    ],
+
+    modifyUrlPrefix: {
+      // Remove a '/dist' prefix from the URLs:
+         '/public': ''
+    },
+
+    clientsClaim: true,
+    skipWaiting: true,
+
+//      exclude: [/\.(?:png|jpg|jpeg|svg)$/],
+
+
+runtimeCaching: [
+
+
+            {
+             urlPattern: new RegExp(`${process.env.APP_URL}`),
+             handler: 'networkFirst',
+             options: {
+               cacheName: `${process.env.APP_NAME}-${process.env.APP_ENV}`
+             }
+           },
+           {
+             urlPattern: new RegExp('https://fonts.(googleapis|gstatic).com'),
+             handler: 'cacheFirst',
+             options: {
+               cacheName: 'google-fonts'
+             }
+           },
+
+
+
+
+
+//images
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('.(?:jpg|png|gif|svg|ico)$'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+//css js
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('.(?:js|css)$'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+
+// root site
+  {
+    // Match any same-origin request that contains 'ajax'.
+    urlPattern: '/',
+    // Apply a network-first strategy.
+    handler: 'networkFirst',
+    options: {
+      // Fall back to the cache after 10 seconds.
+      networkTimeoutSeconds: 12,
+      // Use a custom cache name for this route.
+      cacheName: 'my-root-cache',
+      // Configure custom cache expiration.
+      expiration: {
+        maxEntries: 150,
+        maxAgeSeconds: 3600,
+      },
+      // Configure which responses are considered cacheable.
+      cacheableResponse: {
+        statuses: [0, 200],
+//        headers: {'x-test': 'true'},
+      },
+      // Configure the broadcast cache update plugin.
+      broadcastUpdate: {
+        channelName: 'my-update-channel',
+      },
+      // Add in any additional plugin logic you need.
+      plugins: [
+//        {cacheDidUpdate: () => /* custom plugin code */}
+      ],
+      // matchOptions and fetchOptions are used to configure the handler.
+      fetchOptions: {
+        credentials: 'include',
+        mode: 'cors',
+      },
+//      matchOptions: {
+//        ignoreSearch: true,
+//      },
+    },
+  },
+
+
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('/auth/'),
+    handler: 'networkOnly',
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.jsdelivr\.net/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdnjs\.cloudflare\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://cdn\.rawgit\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://fonts\.googleapis\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+{
+    // To match cross-origin requests, use a RegExp that matches
+    // the start of the origin:
+    urlPattern: new RegExp('^https://unpkg\.com/'),
+    handler: 'staleWhileRevalidate',
+    options: {
+      cacheableResponse: {
+        statuses: [0, 200]
+      }
+    }
+},
+
+
+
+],
+
+}
+
+)
+);
+
+
+##################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Procedura aggiornamento da dvp -> produzione:
+cd /var/www
+cp strails/.env strails/.env_strails_prec
+tar -czvf strails_prec.tar.gz strails
+cp -r dvpstrails/* strails/
+chown -R nginx:nginx strails
+chmod -R ug+rwx strails
+
+
+Chiavi notifiche x firebase google
+Chiave	Token	
+Chiave server
+AAAASBZx7xc:APA91bF7VqQyABDT7rC29fvF1hm6SjNnsBGQcb68-__6d-sq-FvBl1dMCnOpzg7NozFoj8QnhCyGOn412Z_VDgEPikDscSdsXSOFCdzcm2eQcCeR1_rR0uFmwKMEs-5sTX-5Jb_2jDL4
+Chiave server precedente 
+AIzaSyBeOs_O_5-HxohxRKQETru7aNtg4QLQdWY
+
+Chiave	Token	
+Chiave server
+AAAASBZx7xc:APA91bF7VqQyABDT7rC29fvF1hm6SjNnsBGQcb68-__6d-sq-FvBl1dMCnOpzg7NozFoj8QnhCyGOn412Z_VDgEPikDscSdsXSOFCdzcm2eQcCeR1_rR0uFmwKMEs-5sTX-5Jb_2jDL4
+Chiave server precedente 
+AIzaSyBeOs_O_5-HxohxRKQETru7aNtg4QLQdWY
+ID mittente 
+309614210839
+
+
+
+
+http://www.thunderforest.com/blog/apikeys-now-available/
+http://www.thunderforest.com/maps/opencyclemap/
+OpenCycleMap
+https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=73ccde1305884f6ca1a059aa28670fe8
+
+https://github.com/openstreetmap/leaflet-osm
+
+https://www.openstreetmap.org/api/0.6/relation/4132952/full
+https://www.openstreetmap.org/api/0.6/relation/4132952
+https://www.openstreetmap.org/relation/4132952
+
+https://github.com/openstreetmap/leaflet-osm/issues/12
+
+Da quello che ho capito posso estrarre direttamente le relation in formato XML dallle api di osm
+(v i link qui sopra)
+in base all'xml posso disegnare la relation con leaflet-osm
+
+https://opencagedata.com/demo
+
+
+quindi ->
+laravel + leaflet 
+leaflet + plugin leaflet-osm
+
+
+Unire i file ajax_set_type e ajax_set_position in un unico file 
+
+in ajax_position_fly_to tutta la logica della mappa è nella funzione success_callback della geolocalizzazione
+Se non ho attiva la geolocalizzazione la mappa non fa....
+risolvere
+
+Aggiungere la condivisione delle info su fb strava? whatsapp
+
+
+NOTE E APPUNTI:
+
+Per il rating dei sentieri:
+https://github.com/AbdullahGhanem/rating
+ho notato che avevo scelto la strada dei post con i commenti
+in questo modo le risorse posssono essere definite "commentable" o "evaluable"
+e poi possiamo inserire un dato dalla tabella comments o evaluations 
+
+occorre quindi prima definire la risorsa in evaluable e poi valutarla con un 
+evaluation
+
+si chiama many-to-many polymorphic relations
+https://itsolutionstuff.com/post/laravel-many-to-many-polymorphic-relationship-tutorialexample.html
+https://laracasts.com/discuss/channels/eloquent/in-a-many-to-many-polymorphic-relationship-how-do-i-set-the-primary-key-in-the-ables-table
+
+
+
+
+Popola il DB:
+
+Attenzione:
+Il db con cui viene fornito laravel-boilerplate-54 è un db già esistente
+Occorre quindi generare il db con le migration e le seed e poi
+unirlo alle altre tabelle che vengono generate dai ati OSM
+
+
+
+
+
+locate osmdb.ini
+cd /opt/osmosis/bin
+/opt/osmosis/bin/bulkDB.pl /root/osm/048005---Calenzano-path.osm osm
+wget http://osm-estratti.wmflabs.org/estratti/comuni/osm/100005---Prato.osm.zip
+unzip 100005---Prato.osm.zip
+/opt/osmosis/bin/osmosis --read-xml /root/100005---Prato.osm  --tf accept-ways highway=*   --tf reject-ways highway=motorway,motorway_link  --tf reject-relations  --used-node  --write-xml output.osm
+/opt/osmosis/bin/osmosis --read-xml file=/root/100005---Prato.osm --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+/opt/osmosis/bin/osmosis --read-xml file=/root/09---Toscana.osm --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+/opt/osmosis/bin/osmosis --read-xml file=/root/09---Toscana.osm --write-mysql host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+/opt/osmosis/bin/osmosis --read-xml file=/root/09---Toscana.osm --write-mysql host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+/opt/osmosis/bin/osmosis --read-xml file=/root/09---Toscana.osm --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+/opt/osmosis/bin/osmosis --read-xml file=/root/09---Toscana.osm --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+wget http://osm-estratti.wmflabs.org/estratti/comuni/osm/048017---Firenze.osm.zip
+wget http://osm-estratti.wmflabs.org/estratti/comuni/osm_r/100005---Prato.R.osm.zip
+unzip 100005---Prato.R.osm.zip
+/opt/osmosis/bin/osmosis --read-xml file=/root/100005---Prato.osm --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+less osmosis-mysql/mysql-osm.sql
+less osmosis-mysql/mysql-apidb06.sql
+mysql < osmosis-mysql/mysql-osm.sql
+/opt/osmosis/bin/osmosis --read-xml file=/root/09---Toscana.osm --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+/opt/osmosis/bin/osmosis --read-xml file=/root/09---Toscana.osm --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+/opt/osmosis/bin/osmosis --read-xml file=/root/09---Toscana.osm --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+/opt/osmosis/bin/osmosis --read-xml file=/root/rel_tuscany.osm  --write-apidb-0.6 host="localhost" dbType="mysql" database="osm" user="strails" password="strails_pass_strails" validateSchemaVersion=no
+wget -q -N http://download.geofabrik.de/europe/italy-latest.osm.pbf.md5
+wget -q -N http://download.geofabrik.de/europe/italy-updates/state.txt
+wget http://m.m.i24.cc/osmconvert64
+wget -O - http://m.m.i24.cc/osmfilter.c |cc -x c - -O3 -o osmfilter
+wget -O - http://m.m.i24.cc/osmfilter.c
+wget http://m.m.i24.cc/osmfilter.c
+cc -x c - -O3 -o osmfilter osmfilter.c
+gcc -x c - -O3 -o osmfilter osmfilter.c
+yum install gcc
+cc -x c - -O3 -o osmfilter osmfilter.c
+wget -O - http://m.m.i24.cc/osmfilter.c |cc -x c - -O3 -o osmfilter
+ls -la
+wget -O - http://m.m.i24.cc/osmupdate.c | cc -x c - -o osmupdat
+
+/opt/osmosis/bin/osmconvert --drop-author italy-latest.osm.pbf -o=italy-latest.osm
+date ; /opt/osmosis/bin/osmfilter italy-latest.osm --keep="highway=path" -o=italy-latest-path.osm; date
+
+yum install perl-DBD-MySQL.x86_64 perl-DBI.x86_64 perl-libs.x86_64 gdal-perl.x86_64 perl-CPAN.noarch
+yum install perl-Compress-Raw-Bzip2.x86_64
+
+cd /opt/osmosis/lib/
+wget http://svn.openstreetmap.org/applications/utils/gary68/OSM/osm.pm
+wget http://svn.openstreetmap.org/applications/utils/gary68/OSM/osmDB.pm
+mv *.pl ../bin/
+ls
+mv *.pm ../bin/
+cd ../bin/
+ls
+mv *.pm /usr/local/lib64/perl5
+mkdir /usr/local/lib64/perl5/OSM
+mv /usr/local/lib64/perl5/*.* /usr/local/lib64/perl5/OSM/
+yum list | grep -i LWp
+yum install perl-libwww-perl perl-DBI perl-DBD-MySQL perl-GD
+yum list | grep -i bz2
+perl -MCPAN -e'install "Compress::Bzip2"'
+
+
+
+
+cd /var/www/strails/
+mysqldump --opt osm > osm_pre_unione.sql
+mysqldump --opt strails > strails_pre_unione.sql
+less strails_pre_unione.sql
+less osm_pre_unione.sql
+mysql strails < osm_pre_unione.sql
+less osm_pre_unione.sql
+
+cd sql-to-laravel-migrations/
+ls
+less mysql-apidb06.sql
+less README.md
+vim config.json
+less README.md
+ls output/
+python retrieve_and_convert.py
+cd /var/www/strails/
+ls
+mysql
+php artisan migrate
+mysql strails < strails_pre_unione.sql
+php artisan migrate
+cp /root/sql-to-laravel-migrations/output/2017_11_22_234905/2017_11_22_234905_create_* database/migrations/201
+cp /root/sql-to-laravel-migrations/output/2017_11_22_234905/2017_11_22_234905_create_* database/migrations/
+php artisan migrate
+cd database/migrations/
+ls
+grep bigint ./
+grep bigint ./*
+history | grep sed
+sed -i "s/$table->bigint/$table->bigInteger/g" 2017_11_22_234905_create_*
+cd ../../
+php artisan migrate
+mysql
+su -
+cd /var/www/strails/database/migrations/
+
+cd sql-to-laravel-migrations/
+rm -rf output/2017_11_22_234905
+ls
+python retrieve_and_convert.py
+cd output/2017_11_23_085458/
+ls
+sed -i "s/$table->bigint/$table->bigInteger/g" 2017_11_22_234905_create_*
+sed -i "s/$table->bigint/$table->bigInteger/g" ./2017_11_23_085458_create_*
+ls
+rm -rf /var/www/strails/database/migrations/2017_11_22_234905_create_*
+ls
+cp * /var/www/strails/database/migrations/
+cd /var/www/strails/database/migrations/
+vim 2017_11_23_085458_create_nodes_table.php
+less 2014_10_12_000000_create_users_table.php
+grep -ri prima ./
+less ./2017_09_03_144628_create_permission_tables.php
+vim 2017_11_23_085458_create_nodes_table.php
+vim 2017_11_23_085458_create_nodetags_table.php
+vim 2017_11_23_085458_create_relationmembers_table.php
+vim 2017_11_23_085458_create_relations_table.php
+vim 2017_11_23_085458_create_relationtags_table.php
+vim 2017_11_23_085458_create_waynodes_table.php
+vim 2017_11_23_085458_create_ways_table.php
+vim 2017_11_23_085458_create_waytags_table.php
+vim 2017_11_23_085458_create_nodes_table.php
+cd ..
+php artisan migration
+php artisan migrate
+
+mysql strails < strails_pre_unione.sql
+php artisan migrate
+cp osm_pre_unione.sql osm_pre_unione_riadattato.sql
+vim osm_pre_unione_riadattato.sql
+mysql strails < osm_pre_unione_riadattato.sql
+vim osm_pre_unione_riadattato.sql
+mysql strails < osm_pre_unione_riadattato.sql
+vim osm_pre_unione_riadattato.sql
+mysql
+mysql strails < strails_pre_unione.sql
+mysql strails < osm_pre_unione.sql
+
+
+
+#####################################################
+RIASSUNTO PASSAGGI:
+[root@vmi117698 osm2]# wget http://osm-estratti.wmflabs.org/estratti/regioni/pbf/09---Toscana.pbf
+--2018-09-11 14:38:00--  http://osm-estratti.wmflabs.org/estratti/regioni/pbf/09---Toscana.pbf
+Resolving osm-estratti.wmflabs.org (osm-estratti.wmflabs.org)... 208.80.155.156
+Connecting to osm-estratti.wmflabs.org (osm-estratti.wmflabs.org)|208.80.155.156|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 142678296 (136M)
+Saving to: ‘09---Toscana.pbf’
+
+100%[===================================================================================================================>] 142,678,296 11.7MB/s   in 12s
+
+2018-09-11 14:38:13 (10.9 MB/s) - ‘09---Toscana.pbf’ saved [142678296/142678296]
+
+[root@vmi117698 osm2]# /opt/osmosis/bin/osmconvert --drop-author 09---Toscana.pbf -o=09---Toscana.pbf.osm
+[root@vmi117698 osm2]#  cd /opt/osmosis/bin
+[root@vmi117698 bin]# ./osmfilter /root/osm2/09---Toscana.pbf.osm --keep="route=mtb or route=bicycle or route=foot or route=hiking or route=fitness_trail or route=running" --drop-author -o=09---Toscana_filtered.pbf.osm
+[root@vmi117698 bin]# less osm_nuovo.sql
+[root@vmi117698 bin]# mysql osm < osm_nuovo.sql
+[root@vmi117698 bin]# /opt/osmosis/bin/bulkDB.pl /opt/osmosis/bin/09---Toscana_filtered.pbf.osm osm
+
+bulkDB.pl 1.0 for file /opt/osmosis/bin/09---Toscana_filtered.pbf.osm DB osm
+
+
+
+INFO: processing nodes...
+reading nodes...
+osm  strails strails_pass_strailssuccessfully connected to DB osm
+load nodes data...
+load nodetags data...
+DB disconnected
+INFO: 941683 nodes processed.
+INFO: processing ways...
+reading ways...
+osm  strails strails_pass_strailssuccessfully connected to DB osm
+load ways data...
+load waytags data...
+load waynodes data...
+DB disconnected
+INFO: 41621 ways processed.
+INFO: processing relations...
+reading relations...
+osm  strails strails_pass_strailssuccessfully connected to DB osm
+load relations data...
+load relationtags data...
+load relationmembers data...
+DB disconnected
+INFO: 3439 relations processed.
+
+INFO: finished after 0 hours, 0 minutes and 54 seconds
+
+[root@vmi117698 bin]# mysqldump --opt osm > osm_pre_unione_toscana.sql
+[root@vmi117698 bin]# mysql dvpstrails < osm_nuovo.sql
+[root@vmi117698 bin]# mysql dvpstrails < osm_pre_unione
+osm_pre_unione.sql          osm_pre_unione_toscana.sql
+[root@vmi117698 bin]# mysql dvpstrails < osm_pre_unione_toscana.sql
+
+########################################################
+
+
+
+
+cd public/js/
+wget https://raw.githubusercontent.com/estebanav/javascript-mobile-desktop-geolocation/master/js/geoPosition.js
+
+
+
+###################################################################################################
+##################################################################################################
+#################################################################################################à
+DB ITALIA
+
+/opt/osmosis/bin/dvp_aggiorna_italy_db.sh

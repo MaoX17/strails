@@ -1,0 +1,60 @@
+   0 composer install
+   1 npm install
+   2 npm audit fix
+   3 composer require codetoad/strava
+   4 cat composer.json 
+   5 composer require emcconville/google-map-polyline-encoding-tool
+   6 composer require laravel-notification-channels/webpush
+   7 composer require codetoad/strava
+   8 cat composer.json 
+   9 composer require socialiteproviders/strava
+  10 composer require spatie/laravel-sitemap
+  11 php artisan 
+  12 php artisan route:list
+  13 composer install
+  14 npm install
+  15 php artisan migrate
+  16 npm install && npm run dev
+  17 php artisan route:list
+  18 less composer.json 
+  19 php artisan route:list
+  20 cat composer.json 
+  21 php artisan route:list
+  22 ls
+  23 php artisan vendor:publish --provider="NotificationChannels\WebPush\WebPushServiceProvider" --tag="config"
+  24 composer update
+  25 php artisan vendor:publish
+  26 less database/migrations/2021_05_25_105305_create_push_subscriptions_table.php 
+  27 grep -ri subscribable database/migrations/
+  28 grep -ri app_name 
+  29 grep -ri app_name .
+  30 grep -ri app_name .|less
+  31 cd app/Helpers/Global/
+  32 ls
+  33 mv helpers.php StrailsHelper.php
+  34 composer require laravelcollective/html
+  35 grep -ri 
+  36 grep -ri logged_in_user .
+  37 grep -ri active_class .
+  38 grep -ri active_class .|less
+  39 composer require hieu-le/active
+  40 grep -ri toggle_navigation .
+  41 ls 
+  42 ls public/
+  43 ls public/js/
+  44 ls public/js/ -lart
+  45 ls public/
+  46 ls -lart public/ 
+  47 ls -lart public/js/
+  48 ls -lart public/js/vendor.js 
+  49 php artisan route:list
+  50 npm install && npm run dev
+  51 npm install --save @fortawesome/fontawesome-free
+  52 npm install && npm run dev
+  53 ls public/css/
+  54 ls public/css/ -la
+  55 find *.css -name .
+  56 ls -lart
+  57 ls -lart public/
+  58 ls -lart public/webfonts/
+  59 history >> comandi.txt

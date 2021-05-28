@@ -66,8 +66,6 @@ Homestead.json
 /.vagrant
 .phpunit.result.cache
 
-*.strails.*.code-workspace
-*.code-workspace
 .vscode
 /.vscode
 .git
